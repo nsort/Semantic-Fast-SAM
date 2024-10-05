@@ -23,9 +23,9 @@ dependencies:
   - xz=5.2.10=h5eee18b_1
   - zlib=1.2.13=h5eee18b_0
   - pip:
-    # - https://download.pytorch.org/whl/cu111/torch-1.9.1%2Bcu111-cp38-cp38-linux_x86_64.whl
-    # - https://download.pytorch.org/whl/cu111/torchvision-0.10.1%2Bcu111-cp38-cp38-linux_x86_64.whl
-    # - https://download.pytorch.org/whl/torchaudio-0.9.1-cp38-cp38-linux_x86_64.whl
+    - https://download.pytorch.org/whl/cu111/torch-1.9.1%2Bcu111-cp38-cp38-linux_x86_64.whl
+    - https://download.pytorch.org/whl/cu111/torchvision-0.10.1%2Bcu111-cp38-cp38-linux_x86_64.whl
+    - https://download.pytorch.org/whl/torchaudio-0.9.1-cp38-cp38-linux_x86_64.whl
     - addict==2.4.0
     - blis==0.7.9
     - catalogue==2.0.8

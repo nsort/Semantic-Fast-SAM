@@ -13,6 +13,9 @@ import cv2
 import matplotlib.pyplot as plt
 from mmdet.core.visualization.image import imshow_det_bboxes
 import pycocotools.mask as maskUtils
+import torchvision.transforms as transforms
+from ultralytics.yolo.data.augment import LetterBox
+from ultralytics.yolo.data.dataloaders.stream_loaders import LoadPilAndNumpy
 
 
 
@@ -33,6 +36,7 @@ def postprocess_fastSAM(result, threshold=0.5):
         binary_mask = (masks[i] > threshold).type(torch.uint8)
         rle = mask.encode(np.asfortranarray(binary_mask.cpu().numpy()))  
         post_processed_result['segmentation']['counts'] = rle['counts']
+        post_processed_result['segmentation']['size'] = rle['size']
         post_processed_result['area'] = mask.area(rle)
 
         post_processed_result['predicted_iou'] = 0  # placeholder
@@ -47,7 +51,7 @@ def postprocess_fastSAM(result, threshold=0.5):
 if __name__ == "__main__":
 
     model = FastSAM('weights/FastSAM.pt')
-    img_path_fast = 'imgs/rubish.jpg'
+    img_path_fast = 'image_test.jpeg'
     input = Image.open(img_path_fast)
     input = input.convert("RGB")
     input.show()
@@ -58,6 +62,16 @@ if __name__ == "__main__":
         if torch.backends.mps.is_available()
         else "cpu"
     )
+    
+    # # convert image  to torch tensor 
+    # in_data = LoadPilAndNumpy(input, imgsz=1024)
+    # inputs = [x[1] for x in in_data]
+    # input = [LetterBox(1024, True, stride=32)(image=x[0]) for x in inputs]
+    # input = np.stack(input)
+    # input = input[..., ::-1].transpose((0, 3, 1, 2))  # BGR to RGB, BHWC to BCHW, (n, 3, h, w)
+    # input = np.ascontiguousarray(input) 
+    # input = torch.from_numpy(input)
+
     
     mask_result = model(
         input,
@@ -75,14 +89,17 @@ if __name__ == "__main__":
     anns = {'annotations': postprocess_fastSAM(mask_result[0])}
     for ann in anns['annotations']:
             bitmasks.append(maskUtils.decode(ann['segmentation']))
-            imshow_det_bboxes(img,
-                bboxes=None,
-                labels=np.arange(len(bitmasks)),
-                segms=np.stack(bitmasks),
-                font_size=25,
-                show=True,
-                out_file='semantic.png')
-    # print(anns)
+            
+    imshow_det_bboxes(
+        img,
+        bboxes=None,
+        labels=np.arange(len(bitmasks)),
+        segms=np.stack(bitmasks),
+        font_size=25,
+        show=True,
+        out_file='semantic.png'
+        )
+# print(anns)
     
    
 
