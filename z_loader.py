@@ -98,7 +98,7 @@ def custom_collate_fn(batch):
  
 train_loader = DataLoader(
     train_dataset,
-    batch_size=12,
+    batch_size=13,
     shuffle=False,
     collate_fn=custom_collate_fn
 )
@@ -114,8 +114,8 @@ def segment_image_with_fastsam(image):
         device=device,
         retina_masks=True,
         imgsz=[1920, 1080],
-        conf=0.3,
-        iou=0.9
+        conf=0.8,
+        iou=0.8
     )    
     return mask_result
 
@@ -272,34 +272,34 @@ for image, anns, image_id in tqdm(train_loader):
         print(f"None result for image {image_id}")
         continue
 
-    for i, res in enumerate(mask_result):
-        image = mmcv.imread(np_image[i])
-        anns = {'annotations': postprocess_fastSAM(res)}        
-        bitmasks = []
-        for ann in anns['annotations']:
-            bitmasks.append(maskUtils.decode(ann['segmentation']))
+    # for i, res in enumerate(mask_result):
+    #     image = mmcv.imread(np_image[i])
+    #     anns = {'annotations': postprocess_fastSAM(res)}        
+    #     bitmasks = []
+    #     for ann in anns['annotations']:
+    #         bitmasks.append(maskUtils.decode(ann['segmentation']))
             
-        imshow_det_bboxes(
-                image,
-                bboxes=None,
-                labels=np.arange(len(bitmasks)),
-                segms=np.stack(bitmasks),
-                font_size=25,
-                show=False,
-                out_file=f"output_{image_id[i]}.png"
-        )
+        # imshow_det_bboxes(
+        #         image,
+        #         bboxes=None,
+        #         labels=np.arange(len(bitmasks)),
+        #         segms=np.stack(bitmasks),
+        #         font_size=25,
+        #         show=False,
+        #         out_file=f"output_{image_id[i]}.png"
+        # )
         
     # Get masks
     # fs_masks = mask_result.masks.data.cpu().numpy()  # (N, H, W)
-    # # Match masks to annotations
-    # matched_labels = match_masks_to_annotations(mask_result, anns, image.size)
+    # Match masks to annotations
+    matched_labels = match_masks_to_annotations(mask_result, anns, image.size)
     # Extract features for each mask
-    # for idx, fs_mask in enumerate(fs_masks):
-    #     label = matched_labels[idx]
-    #     if label is not None:
-    #         # Extract object using the mask
-    #         object_image = extract_object_from_mask(image, fs_mask)
-    #         # Extract features
-    #         features = extract_features_with_dinov2(object_image)
-    #         features_list.append(features)
-    #         labels_list.append(label)
+    for idx, fs_mask in enumerate(fs_masks):
+        label = matched_labels[idx]
+        if label is not None:
+            # Extract object using the mask
+            object_image = extract_object_from_mask(image, fs_mask)
+            # Extract features
+            features = extract_features_with_dinov2(object_image)
+            features_list.append(features)
+            labels_list.append(label)

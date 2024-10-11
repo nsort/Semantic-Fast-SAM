@@ -40,7 +40,7 @@ class FastSAM(YOLO):
             source = ROOT / 'assets' if is_git_dir() else 'https://ultralytics.com/images/bus.jpg'
             LOGGER.warning(f"WARNING ⚠️ 'source' is missing. Using 'source={source}'.")
         overrides = self.overrides.copy()
-        overrides['conf'] = 0.25
+        overrides['conf'] = 0.50 #0.25
         overrides.update(kwargs)  # prefer kwargs
         overrides['mode'] = kwargs.get('mode', 'predict')
         assert overrides['mode'] in ['track', 'predict']

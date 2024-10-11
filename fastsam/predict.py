@@ -16,7 +16,7 @@ class FastSAMPredictor(DetectionPredictor):
         p = ops.non_max_suppression(preds[0],
                                     self.args.conf,
                                     self.args.iou,
-                                    agnostic=self.args.agnostic_nms,
+                                    agnostic= self.args.agnostic_nms,
                                     max_det=self.args.max_det,
                                     nc=len(self.model.names),
                                     classes=self.args.classes)
