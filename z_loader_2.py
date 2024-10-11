@@ -216,7 +216,7 @@ def segment_image_with_fastsam(image):
         device=device,
         retina_masks=True,
         imgsz=[width, height],  # Use original image size
-        conf=0.8,
+        conf=0.6,
         iou=0.8
     )
     return mask_result
@@ -268,7 +268,7 @@ counter = 0
 # Main processing loop
 for images_batch, anns_batch, image_ids_batch in tqdm(train_loader):
     
-    if counter>10:
+    if counter>20:
         break
     counter += 1
     
@@ -289,22 +289,24 @@ for images_batch, anns_batch, image_ids_batch in tqdm(train_loader):
             print(f"No masks found for image {image_id}")
             continue
         
-        for i, res in enumerate(mask_result):
-            image = mmcv.imread(image_np[i])
-            anns = {'annotations': postprocess_fastSAM(res)}        
-            bitmasks = []
-            for ann in anns['annotations']:
-                bitmasks.append(maskUtils.decode(ann['segmentation']))
+        
+        # visualizations
+        # image = mmcv.imread(image_np)
+        # anns_sam = {'annotations': postprocess_fastSAM(mask_result)} 
                 
-            imshow_det_bboxes(
-                    image,
-                    bboxes=None,
-                    labels=np.arange(len(bitmasks)),
-                    segms=np.stack(bitmasks),
-                    font_size=25,
-                    show=False,
-                    out_file=f"output_{image_id[i]}.png"
-            )
+        # bitmasks = []
+        # for ann in anns_sam['annotations']:
+        #     bitmasks.append(maskUtils.decode(ann['segmentation']))
+            
+        # imshow_det_bboxes(
+        #         image,
+        #         bboxes=None,
+        #         labels=np.arange(len(bitmasks)),
+        #         segms=np.stack(bitmasks),
+        #         font_size=25,
+        #         show=False,
+        #         out_file=f"output_{image_id}.png"
+        # )
 
         # Get predicted masks from FastSAM result
         fs_masks = mask_result.masks.data.cpu().numpy()  # Shape: (N, H, W)
