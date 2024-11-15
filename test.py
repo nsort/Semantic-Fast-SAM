@@ -63,10 +63,9 @@ if __name__ == "__main__":
         else "cpu"
     )
     
-    # # convert image  to torch tensor 
-    # in_data = LoadPilAndNumpy(input, imgsz=1024)
-    # inputs = [x[1] for x in in_data]
-    # input = [LetterBox(1024, True, stride=32)(image=x[0]) for x in inputs]
+    # convert image  to torch tensor 
+    np_images = [np.array(input)]
+    # input = [LetterBox(1024, True, stride=32)(image=x[0]) for x in np_images]
     # input = np.stack(input)
     # input = input[..., ::-1].transpose((0, 3, 1, 2))  # BGR to RGB, BHWC to BCHW, (n, 3, h, w)
     # input = np.ascontiguousarray(input) 
@@ -74,7 +73,7 @@ if __name__ == "__main__":
 
     
     mask_result = model(
-        input,
+        np_images,
         device=device,
         retina_masks=True,
         imgsz=1024,

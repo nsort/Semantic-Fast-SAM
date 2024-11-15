@@ -13,14 +13,14 @@ from tqdm import tqdm
 from fastsam import FastSAM
 import timm 
 
-# from pycocotools import mask
-# from mmdet.core.visualization.image import imshow_det_bboxes
-# import pycocotools.mask as maskUtils
-# import mmcv
+from pycocotools import mask
+from mmdet.core.visualization.image import imshow_det_bboxes
+import pycocotools.mask as maskUtils
+import mmcv
 
 
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # class ZeroWasteDataset(Dataset):
@@ -268,9 +268,9 @@ import timm
 # # Main processing loop
 # for images_batch, anns_batch, image_ids_batch in tqdm(train_loader):
     
-#     if counter>20:
-#         break
-#     counter += 1
+#     # if counter>20:
+#     #     break
+#     # counter += 1
     
 #     batch_size = images_batch.shape[0]
 #     for idx in range(batch_size):
@@ -379,9 +379,28 @@ labels_list = torch.load('labels_list.pt')
 class SimpleClassifier(nn.Module):
     def __init__(self, input_dim, num_classes):
         super(SimpleClassifier, self).__init__()
-        self.fc = nn.Linear(input_dim, num_classes)
+        # ensamble classifier 3 models
+        self.fc1 = nn.Sequential(
+            nn.Linear(input_dim, input_dim),
+            nn.ReLU(),
+            nn.Linear(input_dim, input_dim),
+            nn.ReLU(),
+            nn.Linear(input_dim, num_classes)
+        )
+        
+        # self.fc2 = nn.Sequential(
+        #     nn.Linear(input_dim, input_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(input_dim, input_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(input_dim, num_classes)
+        # )
+        
+        # self.fc3 = nn.Sequential(
+            
+        
     def forward(self, x):
-        x = self.fc(x)  # Outputs raw logits
+        x = self.fc1(x)  # Outputs raw logits
         return x 
 
 # Prepare the dataset from features and labels
@@ -421,7 +440,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(classifier.parameters(), lr=0.001)
 
 # Train the classifier
-num_epochs = 20
+num_epochs = 100
 
 for epoch in range(num_epochs):
     classifier.train()

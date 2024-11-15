@@ -26,9 +26,28 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class SimpleClassifier(nn.Module):
     def __init__(self, input_dim, num_classes):
         super(SimpleClassifier, self).__init__()
-        self.fc = nn.Linear(input_dim, num_classes)
+        # ensamble classifier 3 models
+        self.fc1 = nn.Sequential(
+            nn.Linear(input_dim, input_dim),
+            nn.ReLU(),
+            nn.Linear(input_dim, input_dim),
+            nn.ReLU(),
+            nn.Linear(input_dim, num_classes)
+        )
+        
+        # self.fc2 = nn.Sequential(
+        #     nn.Linear(input_dim, input_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(input_dim, input_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(input_dim, num_classes)
+        # )
+        
+        # self.fc3 = nn.Sequential(
+            
+        
     def forward(self, x):
-        x = self.fc(x)  # Outputs raw logits
+        x = self.fc1(x)  # Outputs raw logits
         return x 
 
 class ZeroWasteDataset(Dataset):
@@ -84,7 +103,7 @@ class ZeroWasteDataset(Dataset):
             image = torch.from_numpy(image)
             
         
-        return image, anns, image_id
+        return image, anns, image_id, file_name
  
 train_dataset = ZeroWasteDataset(
     data_dir='dataset/train/data/',
@@ -92,7 +111,7 @@ train_dataset = ZeroWasteDataset(
 )
  
 def custom_collate_fn(batch):
-    images, anns, image_ids = zip(*batch)
+    images, anns, image_ids, file_name = zip(*batch)
  
     # Stack images (they are tensors of the same size)
     images = torch.stack(images, dim=0)
@@ -103,7 +122,7 @@ def custom_collate_fn(batch):
     # image_ids can be converted to a list or tensor
     image_ids = torch.tensor(image_ids)
  
-    return images, anns, image_ids
+    return images, anns, image_ids, file_name
  
 train_loader = DataLoader(
     train_dataset,
@@ -280,7 +299,7 @@ labels_list = []
 
 counter = 0
 # Main processing loop
-for images_batch, anns_batch, image_ids_batch in tqdm(train_loader):
+for images_batch, anns_batch, image_ids_batch, file_name in tqdm(train_loader):
     
     if counter>20:
         break
@@ -291,6 +310,7 @@ for images_batch, anns_batch, image_ids_batch in tqdm(train_loader):
         image_tensor = images_batch[idx]  # Tensor shape: (C, H, W)
         anns = anns_batch[idx]            # List of annotations for this image
         image_id = image_ids_batch[idx].item()
+        fname = file_name[idx]
 
         # Convert image tensor to numpy array and then to PIL image
         image_np = image_tensor.numpy().astype('uint8')  # Shape: (H, W, C)
@@ -346,8 +366,7 @@ for images_batch, anns_batch, image_ids_batch in tqdm(train_loader):
                 segms=np.stack(bitmasks),
                 font_size=25,
                 show=False,
-                out_file=f"output_{image_id}.png"
-        )
+                out_file=f"output_{image_id}_{fname}.png")
         
                     
             # max_iou = 0
